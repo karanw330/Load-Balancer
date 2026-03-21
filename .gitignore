@@ -1,0 +1,33 @@
+# Compiled object files
+*.o
+*.obj
+*.dll
+*.exe
+*.so
+*.a
+*.lib
+*.dylib
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Build directories
+build/
+bin/
+obj/
+
+# VS Code specific
+.vscode/
+
+# User-specific files
+*.user
+
+# Log files
+*.log
+
+# Executables
+*.out
+
+# Dependency directories
+/vendor/
