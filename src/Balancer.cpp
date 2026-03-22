@@ -1,20 +1,22 @@
-#include "Balancer.h"
+#include "../utils/Balancer.h"
 
-void Balancer::AddServer(Server* server) {
-    servers.push_back(&server);
+void Balancer::AddServer(Server* server) {   
+    servers.push_back(server);
+    totalServers++;
 }
 
-void Balancer::RemoveServer(string serverName) {
+void Balancer::RemoveServer(int port) {
     for (auto it = servers.begin(); it != servers.end(); ++it) {
-        if ((*it)->serverName == serverName) {
+        if ((*it)->port == port) {
             servers.erase(it);
+            totalServers--;
             break;
         }
     }
 }
 
-void Balancer::RouteRequest(string clientIP) {
+void Balancer::RouteRequest(string clientIP, int currentTime) {
     // Implement routing logic based on the selected strategy
-    // For example, you can call RoundRobin(), LeastConnections(), or IPHashing() here
+    
     
 }
