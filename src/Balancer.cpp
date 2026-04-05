@@ -24,22 +24,24 @@ void Balancer::RemoveServer(int port) {
     }
 }
 
-void Balancer::RouteRequest(string clientIP, string payload, int currentTime) {
+Server* Balancer::RouteRequest(string clientIP, string payload, int currentTime) {
     if (!strategy) {
         cout << "Error: No load balancing strategy set." << endl;
-        return;
+        return nullptr;
     }
 
     if (servers.empty()) {
         cout << "Error: No servers available to route the request." << endl;
-        return;
+        return nullptr;
     }
 
     int serverIndex = strategy->GetNextServerIndex();
     if (serverIndex >= 0 && serverIndex < servers.size()) {
         servers[serverIndex]->Connect();
+        return servers[serverIndex];
     } else {
         cout << "Error: Strategy returned an invalid server index." << endl;
+        return nullptr;
     }
 }
 

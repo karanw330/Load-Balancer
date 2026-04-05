@@ -13,7 +13,7 @@ public:
     Balancer();
     void AddServer(Server* server);
     void RemoveServer(int port);
-    void RouteRequest(std::string clientIP, std::string payload, int currentTime);
+    Server* RouteRequest(std::string clientIP, std::string payload, int currentTime);
     void SetStrategy(LoadBalancingStrategy* newStrategy);
     const std::vector<Server*>& GetServers() const { return servers; }
 };

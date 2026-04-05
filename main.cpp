@@ -6,33 +6,69 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iomanip>
+#include <cstdlib>
+#include <windows.h>
 
 using namespace std;
 
-void ShowHelp() {
-    cout << "\n--- Load Balancer CLI Commands ---\n";
-    cout << "add <ip> <port> <name>       : Add a new server\n";
-    cout << "remove <port>                : Remove a server by port\n";
-    cout << "route <clientIP> <payload>   : Route a simulated request\n";
-    cout << "status                       : Show health and load of all servers\n";
-    cout << "help                         : Show this help message\n";
-    cout << "exit                         : Quit the simulation\n";
-    cout << "----------------------------------\n";
+void renderDashboard(const Balancer& balancer, const string& lastLog) {
+    system("cls");
+    const auto& servers = balancer.GetServers();
+
+    cout << "┌────────────────────────────────────────────────────────────────────────────┐" << endl;
+    cout << "│                         LOAD BALANCER LIVE DASHBOARD                       │" << endl;
+    cout << "├──────────────────┬──────────────────────┬────────────┬─────────────────────┤" << endl;
+    cout << "│ NAME             │ ADDRESS              │ LOAD       │ STATUS              │" << endl;
+    cout << "├──────────────────┼──────────────────────┼────────────┼─────────────────────┤" << endl;
+
+    if (servers.empty()) {
+        cout << "│                  ( No active servers in the pool )                         │" << endl;
+    } else {
+        for (const auto& s : servers) {
+            string loadStr = to_string(s->GetCurrentConnections()) + "/" + to_string(s->GetMaxConnections());
+            string addr = s->GetIP() + ":" + to_string(s->port);
+            
+            cout << "│ " << left << setw(16) << s->GetName().substr(0, 16)
+                 << " │ " << left << setw(20) << addr.substr(0, 20)
+                 << " │ " << left << setw(10) << loadStr
+                 << " │ " << left << setw(19) << s->GetHealthStatus().substr(0, 19) << " │" << endl;
+        }
+    }
+
+    cout << "└──────────────────┴──────────────────────┴────────────┴─────────────────────┘" << endl;
+    cout << " [Legend] [Enter: Quick Route | add <ip> <port> <name> | remove <port> | exit] " << endl;
+    cout << "──────────────────────────────────────────────────────────────────────────────" << endl;
+    
+    if (!lastLog.empty()) {
+        cout << lastLog << endl;
+    }
+    cout << "> ";
 }
 
 int main() {
+    SetConsoleOutputCP(CP_UTF8);
     RoundRobin roundRobinStrategy;
     Balancer balancer;
     balancer.SetStrategy(&roundRobinStrategy);
 
+    string lastLog = "[LOG] System initialized. Ready for requests.";
     string input;
-    cout << "Welcome to the Load Balancer Simulation CLI!" << endl;
-    ShowHelp();
 
     while (true) {
-        cout << "> ";
+        renderDashboard(balancer, lastLog);
+        
         if (!getline(cin, input)) break;
-        if (input.empty()) continue;
+
+        if (input.empty()) {
+            Server* routedSrv = balancer.RouteRequest("127.0.0.1", "Auto-Trigger", 0);
+            if (routedSrv) {
+                lastLog = "[LOG] Successfully routed to Server: " + routedSrv->GetName();
+            } else {
+                lastLog = "[LOG] Error: Routing failed (Check server pool).";
+            }
+            continue;
+        }
 
         stringstream ss(input);
         string command;
@@ -40,50 +76,41 @@ int main() {
 
         if (command == "exit") {
             break;
-        } else if (command == "help") {
-            ShowHelp();
         } else if (command == "add") {
             string ip, name;
             int port;
             if (ss >> ip >> port >> name) {
-                // Using dynamic allocation for simplified storage in this simulation
-                // In a real system, we'd manage this memory more carefully.
                 Server* newServer = new Server(ip, port, name);
                 balancer.AddServer(newServer);
-                cout << "Added server " << name << " at " << ip << ":" << port << endl;
+                lastLog = "[LOG] Added server: " + name + " at " + ip + ":" + to_string(port);
             } else {
-                cout << "Usage: add <ip> <port> <name>" << endl;
+                lastLog = "[LOG] Usage Error: add <ip> <port> <name>";
             }
         } else if (command == "remove") {
             int port;
             if (ss >> port) {
                 balancer.RemoveServer(port);
-                cout << "Removed server on port " << port << " (if it existed)" << endl;
+                lastLog = "[LOG] Attempted to remove server on port: " + to_string(port);
             } else {
-                cout << "Usage: remove <port>" << endl;
+                lastLog = "[LOG] Usage Error: remove <port>";
             }
         } else if (command == "route") {
             string clientIP, payload;
             if (ss >> clientIP >> payload) {
-                balancer.RouteRequest(clientIP, payload, 0);
+                Server* routedSrv = balancer.RouteRequest(clientIP, payload, 0);
+                if (routedSrv) {
+                    lastLog = "[LOG] Manually routed to Server: " + routedSrv->GetName();
+                } else {
+                    lastLog = "[LOG] Error: Manual routing failed.";
+                }
             } else {
-                cout << "Usage: route <clientIP> <payload>" << endl;
+                lastLog = "[LOG] Usage Error: route <clientIP> <payload>";
             }
         } else if (command == "status") {
-            const auto& servers = balancer.GetServers();
-            if (servers.empty()) {
-                cout << "No active servers." << endl;
-            } else {
-                cout << "\n--- Server Status ---\n";
-                for (const auto& s : servers) {
-                    cout << "[" << s->GetName() << "] " << s->GetIP() << ":" << s->port 
-                         << " | Connections: " << s->GetCurrentConnections() << "/" << s->GetMaxConnections()
-                         << " | Status: " << s->GetHealthStatus() << endl;
-                }
-                cout << "----------------------\n";
-            }
+            // Dashboard already shows status, so we just acknowledge
+            lastLog = "[LOG] Dashboard refreshed.";
         } else {
-            cout << "Unknown command: " << command << ". Type 'help' for available commands." << endl;
+            lastLog = "[LOG] Unknown command: " + command;
         }
     }
 
