@@ -1,4 +1,7 @@
 #include "../utils/Server.h"
+#include <iostream>
+
+using namespace std;
 
 void Server::Connect() {
     if (currentConnections < maxConnections) {
@@ -18,3 +21,11 @@ void Server::DisplayActiveConnections() {
     cout << "Server " << serverName << " has " << currentConnections << " active connections." << endl;
 }
 
+void Server::DecrementLoad() {
+    if (currentConnections > 0) {
+        currentConnections--;
+        cout << "Request completed on server " << serverName << ". Remaining connections: " << currentConnections << endl;
+    } else {
+        cout << "Server " << serverName << " has no active connections to decrement." << endl;
+    }
+}

@@ -16,12 +16,30 @@
 build/
 bin/
 obj/
+out/
+debug/
+release/
 
 # VS Code specific
-.vscode/
+/.vscode/
 
-# User-specific files
+# Visual Studio specific
+/.vs/
+*.sln
+*.vcxproj
+*.filters
 *.user
+*.suo
+
+# CLion / IntelliJ
+/.idea/
+cmake-build-*/
+
+# CMake generated files (if run from root)
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
 
 # Log files
 *.log

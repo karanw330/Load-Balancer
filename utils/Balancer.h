@@ -1,10 +1,19 @@
+#pragma once
+#include <vector>
+#include <string>
+#include "Server.h"
+#include "LoadBalancingStrategy.h"
+
 class Balancer {
-    vector<Server *> servers;
+    std::vector<Server *> servers;
     LoadBalancingStrategy* strategy;
-    public:
-        int totalServers = 0;
-        Balancer() = default;
-        void AddServer(Server* server);
-        void RemoveServer(int port);
-        void RouteRequest(string clientIP, int currentTime);
+    
+public:
+    int totalServers;
+    Balancer();
+    void AddServer(Server* server);
+    void RemoveServer(int port);
+    void RouteRequest(std::string clientIP, std::string payload, int currentTime);
+    void SetStrategy(LoadBalancingStrategy* newStrategy);
+    const std::vector<Server*>& GetServers() const { return servers; }
 };

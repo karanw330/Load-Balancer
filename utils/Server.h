@@ -1,22 +1,37 @@
+#pragma once
+#include <string>
+#include <queue>
+#include <iostream>
+#include "Request.h"
+
 class Server {
-    string ip;
-    int currentConnections=0;
-    int maxConnections=0;
-    string serverName;
-    string healthStatus;
-    public:
-        int port;
-        Server(string ip, int port, string serverName, int maxConnections=30, string healthStatus="Healthy") {
-            this->ip = ip;
-            this->port = port;
-            this->currentConnections = 0;
-            this->maxConnections = maxConnections;
-            this->serverName = serverName;
-            this->healthStatus = "Healthy";
-        };
-        queue<Request> activeRequests;
-        void Connect();
-        void UpdateHealthStatus(string newStatus);
-        void DisplayActiveConnections();
-        void DecrementLoad();
+    std::string ip;
+    int currentConnections;
+    int maxConnections;
+    std::string serverName;
+    std::string healthStatus;
+    
+public:
+    int port;
+    Server(std::string ip, int port, std::string serverName, int maxConnections = 30, std::string healthStatus = "Healthy") {
+        this->ip = ip;
+        this->port = port;
+        this->currentConnections = 0;
+        this->maxConnections = maxConnections;
+        this->serverName = serverName;
+        this->healthStatus = healthStatus;
+    };
+
+    std::queue<Request> activeRequests;
+    void Connect();
+    void UpdateHealthStatus(std::string newStatus);
+    void DisplayActiveConnections();
+    void DecrementLoad();
+
+    // Getters
+    std::string GetName() const { return serverName; }
+    std::string GetIP() const { return ip; }
+    int GetCurrentConnections() const { return currentConnections; }
+    int GetMaxConnections() const { return maxConnections; }
+    std::string GetHealthStatus() const { return healthStatus; }
 };
