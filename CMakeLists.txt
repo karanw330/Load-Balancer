@@ -11,6 +11,8 @@ set(SOURCES
     src/Balancer.cpp
     src/Request.cpp
     src/Server.cpp
+    src/PortHashing.cpp
+    src/LeastConnections.cpp
 )
 
 add_executable(LoadBalancer ${SOURCES})

@@ -3,12 +3,14 @@
 
 using namespace std;
 
-void Server::Connect() {
+bool Server::Connect() {
     if (currentConnections < maxConnections) {
         currentConnections++;
-        cout << "Connected to server: " << serverName << " (" << ip << ":" << port << ")" << endl;
+        totalRequestsHandled++;
+        return true;
     } else {
-        cout << "Server " << serverName << " is at maximum capacity. Cannot connect." << endl;
+        failedRequests++;
+        return false;
     }
 }
 

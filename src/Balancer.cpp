@@ -35,12 +35,14 @@ Server* Balancer::RouteRequest(string clientIP, string payload, int currentTime)
         return nullptr;
     }
 
-    int serverIndex = strategy->GetNextServerIndex();
-    if (serverIndex >= 0 && serverIndex < servers.size()) {
-        servers[serverIndex]->Connect();
-        return servers[serverIndex];
+    int serverIndex = strategy->GetNextServerIndex(clientIP, servers);
+    if (serverIndex >= 0 && serverIndex < static_cast<int>(servers.size())) {
+        if (servers[serverIndex]->Connect()) {
+            return servers[serverIndex];
+        } else {
+            return nullptr; // Connection failed (max capacity)
+        }
     } else {
-        cout << "Error: Strategy returned an invalid server index." << endl;
         return nullptr;
     }
 }

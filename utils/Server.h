@@ -22,8 +22,11 @@ public:
         this->healthStatus = healthStatus;
     };
 
+    long long totalRequestsHandled = 0;
+    long long failedRequests = 0;
+
     std::queue<Request> activeRequests;
-    void Connect();
+    bool Connect();
     void UpdateHealthStatus(std::string newStatus);
     void DisplayActiveConnections();
     void DecrementLoad();
@@ -34,4 +37,6 @@ public:
     int GetCurrentConnections() const { return currentConnections; }
     int GetMaxConnections() const { return maxConnections; }
     std::string GetHealthStatus() const { return healthStatus; }
+    long long GetTotalRequests() const { return totalRequestsHandled; }
+    long long GetFailedRequests() const { return failedRequests; }
 };
