@@ -31,3 +31,11 @@ void Server::DecrementLoad() {
         cout << "Server " << serverName << " has no active connections to decrement." << endl;
     }
 }
+
+void Server::AddLoad(int count) {
+    if (currentConnections + count <= maxConnections) {
+        currentConnections += count;
+    } else {
+        currentConnections = maxConnections;
+    }
+}

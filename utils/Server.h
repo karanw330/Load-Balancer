@@ -30,6 +30,7 @@ public:
     void UpdateHealthStatus(std::string newStatus);
     void DisplayActiveConnections();
     void DecrementLoad();
+    void AddLoad(int count);
 
     // Getters
     std::string GetName() const { return serverName; }

@@ -25,6 +25,11 @@
 
 using namespace std;
 
+string getRandomIP() {
+    return to_string(rand() % 256) + "." + to_string(rand() % 256) + "." +
+           to_string(rand() % 256) + "." + to_string(rand() % 256);
+}
+
 void renderDashboard(const Balancer& balancer, const string& lastLog, const string& strategyName) {
     system("cls");
     const auto& servers = balancer.GetServers();
@@ -112,7 +117,7 @@ void renderDashboard(const Balancer& balancer, const string& lastLog, const stri
     printBorder("└", "─", "┘");
     
     cout << " [Legend] " << YELLOW << "[Enter: Route]" << RESET << " | " << CYAN << "add <ip> <port> <name>" << RESET << " | strategy <rr/hash/lc>" << endl;
-    cout << "          " << CYAN << "route <key> <payload>" << RESET << " | remove <port> | exit" << endl;
+    cout << "          " << CYAN << "route <key> <payload>" << RESET << " | load <port> <count>" << RESET << " | remove <port> | exit" << endl;
     cout << CYAN << "───────────────────────────────────────────────────────────────────────────────────────" << RESET << endl;
     
     if (!lastLog.empty()) {
@@ -141,15 +146,17 @@ int main() {
     string lastLog = string(BOLDGREEN) + "[LOG] System initialized. Dashboard updated for metrics." + RESET;
     string input;
 
+    srand(static_cast<unsigned int>(time(NULL)));
     while (true) {
         renderDashboard(balancer, lastLog, currentStrategyName);
         
         if (!getline(cin, input)) break;
 
         if (input.empty()) {
-            Server* routedSrv = balancer.RouteRequest("127.0.0.1", "Auto-Trigger", 0);
+            string randomIP = getRandomIP();
+            Server* routedSrv = balancer.RouteRequest(randomIP, "Auto-Trigger", 0);
             if (routedSrv) {
-                lastLog = string(BOLDGREEN) + "[LOG] Routed to Server: " + routedSrv->GetName() + RESET;
+                lastLog = string(BOLDGREEN) + "[LOG] Routed (IP: " + randomIP + ") to Server: " + routedSrv->GetName() + RESET;
             } else {
                 lastLog = string(BOLDRED) + "[LOG] DROPPED: No capacity or invalid routing." + RESET;
             }
@@ -179,6 +186,22 @@ int main() {
                 lastLog = string(BOLDGREEN) + "[LOG] Attempted to remove server on port: " + to_string(port) + RESET;
             } else {
                 lastLog = string(BOLDRED) + "[LOG] Usage Error: remove <port>" + RESET;
+            }
+        } else if (command == "load") {
+            int port, count;
+            if (ss >> port >> count) {
+                bool found = false;
+                for (auto s : balancer.GetServers()) {
+                    if (s->port == port) {
+                        s->AddLoad(count);
+                        lastLog = string(BOLDGREEN) + "[LOG] Added " + to_string(count) + " connections to server " + s->GetName() + RESET;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) lastLog = string(BOLDRED) + "[LOG] Server with port " + to_string(port) + " not found." + RESET;
+            } else {
+                lastLog = string(BOLDRED) + "[LOG] Usage Error: load <port> <count>" + RESET;
             }
         } else if (command == "route") {
             string clientKey, payload;
