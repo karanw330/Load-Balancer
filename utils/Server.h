@@ -31,6 +31,7 @@ public:
     void DisplayActiveConnections();
     void DecrementLoad();
     void AddLoad(int count);
+    void RemoveLoad(int count);
 
     // Getters
     std::string GetName() const { return serverName; }

@@ -39,3 +39,11 @@ void Server::AddLoad(int count) {
         currentConnections = maxConnections;
     }
 }
+
+void Server::RemoveLoad(int count) {
+    if (currentConnections - count >= 0) {
+        currentConnections -= count;
+    } else {
+        currentConnections = 0;
+    }
+}

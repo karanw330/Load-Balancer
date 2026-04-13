@@ -117,8 +117,8 @@ void renderDashboard(const Balancer& balancer, const string& lastLog, const stri
     printBorder("└", "─", "┘");
     
     cout << " [Legend] " << YELLOW << "[Enter: Route]" << RESET << " | " << CYAN << "add <ip> <port> <name>" << RESET << " | strategy <rr/hash/lc>" << endl;
-    cout << "          " << CYAN << "route <key> <payload>" << RESET << " | load <port> <count>" << RESET << " | remove <port> | exit" << endl;
-    cout << CYAN << "───────────────────────────────────────────────────────────────────────────────────────" << RESET << endl;
+    cout << "          " << CYAN << "route <key> <payload>" << RESET << " | load <port> <n>" << RESET << " | unload <port> <n>" << RESET << " | remove <port> | exit" << endl;
+    cout << CYAN << "────────────────────────────────────────────────────────────────────────────────────────" << RESET << endl;
     
     if (!lastLog.empty()) {
         cout << lastLog << endl;
@@ -202,6 +202,22 @@ int main() {
                 if (!found) lastLog = string(BOLDRED) + "[LOG] Server with port " + to_string(port) + " not found." + RESET;
             } else {
                 lastLog = string(BOLDRED) + "[LOG] Usage Error: load <port> <count>" + RESET;
+            }
+        } else if (command == "unload") {
+            int port, count;
+            if (ss >> port >> count) {
+                bool found = false;
+                for (auto s : balancer.GetServers()) {
+                    if (s->port == port) {
+                        s->RemoveLoad(count);
+                        lastLog = string(BOLDGREEN) + "[LOG] Removed " + to_string(count) + " connections from server " + s->GetName() + RESET;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) lastLog = string(BOLDRED) + "[LOG] Server with port " + to_string(port) + " not found." + RESET;
+            } else {
+                lastLog = string(BOLDRED) + "[LOG] Usage Error: unload <port> <count>" + RESET;
             }
         } else if (command == "route") {
             string clientKey, payload;
